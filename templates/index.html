@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>conversation with aria</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #202042;
+        }
+        .chat-container {
+            width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .chat-box {
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #ccc;
+        }
+        .chat-input-container {
+            display: flex;
+        }
+        .chat-input {
+            width: calc(100% - 40px);
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+        }
+        .chat-input:focus {
+            outline: none;
+        }
+        .send-button {
+            width: 40px;
+            border: none;
+            border-top: 1px solid #ccc;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value;
+            input.value = '';
+
+            console.log("Message sent: " + message);
+
+            if (message) {
+                const chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML += '<div><b>You:</b>' + message+ '</div>';
+
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                })
+                .then(response => {
+                    console.log("Response status: " + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Response data: " + data.response);
+                    chatBox.innerHTML += '<div><b>Aria:</b>' + data.response +'</div>';
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => {
+                    console.log("Error: " + error.message);
+                    chatBox.innerHTML += '<div><b>Error:</b>'+ error.message +'</div>';
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
